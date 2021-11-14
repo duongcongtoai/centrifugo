@@ -1,0 +1,64 @@
+fiber = require 'fiber'
+
+box.cfg{
+    listen = '0.0.0.0:3301',
+    readahead = 10 * 1024 * 1024, -- to keep up with benchmark load.
+    net_msg_max = 10 * 1024, -- to keep up with benchmark load.
+}
+
+box.once("init", function()
+local s = box.schema.space.create('test', {
+    id = 512,
+    if_not_exists = true,
+})
+s:create_index('primary', {type = 'tree', parts = {1, 'uint'}, if_not_exists = true})
+
+local st = box.schema.space.create('schematest', {
+    id = 514,
+    temporary = true,
+    if_not_exists = true,
+    field_count = 7,
+    format = {
+        {name = "name0", type = "unsigned"},
+        {name = "name1", type = "unsigned"},
+        {name = "name2", type = "string"},
+        {name = "name3", type = "unsigned"},
+        {name = "name4", type = "unsigned"},
+        {name = "name5", type = "string"},
+    },
+})
+st:create_index('primary', {
+    type = 'hash', 
+    parts = {1, 'uint'}, 
+    unique = true,
+    if_not_exists = true,
+})
+st:create_index('secondary', {
+    id = 3,
+    type = 'tree',
+    unique = false,
+    parts = { 2, 'uint', 3, 'string' },
+    if_not_exists = true,
+})
+st:truncate()
+
+box.schema.func.create('box.info')
+box.schema.func.create('simple_incr')
+
+-- auth testing: access control
+box.schema.user.create('test', {password = 'test'})
+box.schema.user.grant('test', 'execute', 'universe')
+box.schema.user.grant('test', 'read,write', 'space', 'test')
+box.schema.user.grant('test', 'read,write', 'space', 'schematest')
+end)
+
+function timeout()
+    fiber.sleep(1)
+    return 1
+end
+
+function simple_incr(a)
+    return a+1
+end
+
+box.space.test:truncate()

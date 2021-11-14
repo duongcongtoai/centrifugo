@@ -411,6 +411,8 @@ func main() {
 				node.SetBroker(broker)
 			}
 
+			// run broker (listen to nats for commands: TODO: what commands do)
+			// send ping command by interval to nats
 			if err = node.Run(); err != nil {
 				log.Fatal().Msgf("error running node: %v", err)
 			}

@@ -1,0 +1,7 @@
+vendor/
+.vscode
+.idea
+*.snap
+*.xlog
+*.snap.inprogress
+.rocks/

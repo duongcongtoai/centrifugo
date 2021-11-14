@@ -13,7 +13,6 @@ docs/site
 internal/ultra
 misc/clickhouse_cluster/clickhouse*
 misc/clickhouse_cluster/zookeeper
-vendor/
 *.orig
 tmp/
 .rocks/
